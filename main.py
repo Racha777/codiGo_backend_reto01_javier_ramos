@@ -6,6 +6,7 @@ from tkinter.ttk import Treeview
 ANCHO=640
 ALTO=480
 
+tiposCambio=[]
 url=requests.get('https://www.sbs.gob.pe/app/pp/SISTIP_PORTAL/Paginas/Publicacion/TipoCambioPromedio.aspx')
 
 class TipoCambio:
@@ -21,13 +22,16 @@ class TipoCambio:
 
         #Treeview
         self.trvTipoCambio=Treeview(height=8,columns=('#1','#2'))
-        self.trvTipoCambio.grid(row=2,column=0,columnspan=3,padx=10)
+        self.trvTipoCambio.grid(row=1,column=0,columnspan=3,padx=10,pady=5)
         self.trvTipoCambio.heading('#0',text='Moneda',anchor=CENTER)
         self.trvTipoCambio.heading('#1',text='Compra',anchor=CENTER)
         self.trvTipoCambio.heading('#2',text='Venta',anchor=CENTER)
 
+        #Boton exportar csv
+        btnExportar=Button(text='Exportar tipos de cambio',command=self.exportTipoCambio)
+        btnExportar.grid(row=2,column=1,columnspan=1,sticky=W+E)
+
     def scrappingTipoCambio(self):
-        tiposCambio=[]
         if(url.status_code==200):
             html=BeautifulSoup(url.text,'html.parser')
             tabla=html.find_all('table',{'id':'ctl00_cphContent_rgTipoCambio_ctl00'})
@@ -45,6 +49,19 @@ class TipoCambio:
 
         else:
             print('error '+str(url.status_code))
+
+    def exportTipoCambio(self):
+        strTipoCambio=""
+        for dictMoneda in tiposCambio:
+            for clave,valor in dictMoneda.items():
+                strTipoCambio+=valor
+                if clave!='venta':
+                    strTipoCambio+=','
+                else:
+                    strTipoCambio+='\n'
+        fw=open('tiposDeCambio.csv','w')
+        fw.write(strTipoCambio)
+        fw.close()
 
 if __name__=="__main__":
     window=Tk()
